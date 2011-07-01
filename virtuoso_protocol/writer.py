@@ -53,9 +53,9 @@ class WriterPlugin(SPARQLWriterPlugin):
                                                                  else None)
 
 	if "max_statements" in kwargs:
-            self.__max_statements = kwargs["max_statements"]
-        else:
-            self.__max_statements = 0
+        self.__max_statements = kwargs["max_statements"]
+    else:
+        self.__max_statements = 0
 
 
         # By default set combine_queries which Virtuoso supports
@@ -94,7 +94,7 @@ class WriterPlugin(SPARQLWriterPlugin):
             context = self.__add_default_write_context(context)
             # Explicitly enumerates triples for deletion.
             remove_query = self.__prepare_selective_delete_query(items, context)
-             if self.__max_statements == 0:
+            if self.__max_statements == 0:
                 insert_query = self.__prepare_add_many_query(items, context)
                 self.__execute(remove_query, insert_query)
             else:
