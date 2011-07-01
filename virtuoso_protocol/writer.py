@@ -52,7 +52,7 @@ class WriterPlugin(SPARQLWriterPlugin):
         self.__default_write_context = (URIRef(unicode(context)) if context
                                                                  else None)
 
-		if "max_statements" in kwargs:
+        if "max_statements" in kwargs:
 	        self.__max_statements = kwargs["max_statements"]
 	    else:
 	        self.__max_statements = 0
