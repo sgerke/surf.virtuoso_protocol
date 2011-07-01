@@ -53,9 +53,9 @@ class WriterPlugin(SPARQLWriterPlugin):
                                                                  else None)
 
         if "max_statements" in kwargs:
-	        self.__max_statements = kwargs["max_statements"]
-	    else:
-	        self.__max_statements = 0
+            self.__max_statements = kwargs["max_statements"]
+        else:
+            self.__max_statements = 0
 
 
         # By default set combine_queries which Virtuoso supports
