@@ -52,6 +52,12 @@ class WriterPlugin(SPARQLWriterPlugin):
         self.__default_write_context = (URIRef(unicode(context)) if context
                                                                  else None)
 
+	if "max_statements" in kwargs:
+            self.__max_statements = kwargs["max_statements"]
+        else:
+            self.__max_statements = 0
+
+
         # By default set combine_queries which Virtuoso supports
         if "combine_queries" not in kwargs:
             kwargs["combine_queries"] = True
@@ -76,16 +82,24 @@ class WriterPlugin(SPARQLWriterPlugin):
             context = self.__add_default_write_context(context)
             # Deletes all triples with matching subjects.
             remove_query = self.__prepare_delete_many_query(items, context)
-            insert_query = self.__prepare_add_many_query(items, context)
-            self.__execute(remove_query, insert_query)
+            if self.__max_statements == 0:
+                insert_query = self.__prepare_add_many_query(items, context)
+                self.__execute(remove_query, insert_query)
+            else:
+                insert_queries = self.__prepare_add_many_queries(items, context)
+                self.__execute(remove_query, *insert_queries)
 
     def _update(self, *resources):
         for context, items in self.__group_by_context(resources).items():
             context = self.__add_default_write_context(context)
             # Explicitly enumerates triples for deletion.
             remove_query = self.__prepare_selective_delete_query(items, context)
-            insert_query = self.__prepare_add_many_query(items, context)
-            self.__execute(remove_query, insert_query)
+             if self.__max_statements == 0:
+                insert_query = self.__prepare_add_many_query(items, context)
+                self.__execute(remove_query, insert_query)
+            else:
+                insert_queries = self.__prepare_add_many_queries(items, context)
+                self.__execute(remove_query, *insert_queries)
 
     def _remove(self, *resources, **kwargs):
         for context, items in self.__group_by_context(resources).items():
@@ -141,3 +155,26 @@ class WriterPlugin(SPARQLWriterPlugin):
     def _clear(self, context=None):
         context = self.__add_default_write_context(context)
         super(WriterPlugin, self)._clear(context)
+
+    def __prepare_add_many_queries(self, resources, context = None):
+        queries = []
+        query = insert()
+
+        if context:
+            query.into(context)
+        i = 0
+
+        for resource in resources:
+            s = resource.subject
+            for p, objs in resource.rdf_direct.items():
+                for o in objs:
+                    query.template((s, p, o))
+                    i += 1
+                    if self.__max_statements > 0 and i == self.__max_statements:
+                        queries.append(query)
+                        query = insert()
+                        if context:
+                            query.into(context)
+                        i = 0
+        queries.append(query)
+        return queries
