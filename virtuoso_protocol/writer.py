@@ -87,8 +87,9 @@ class WriterPlugin(SPARQLWriterPlugin):
                 self.__execute(remove_query, insert_query)
             else:
                 insert_queries = self.__prepare_add_many_queries(items, context)
-		for q in insert_queries:
-	                self.__execute(remove_query, q)
+                self.__execute(remove_query)
+                for q in insert_queries:
+                    self.__execute( q)
 
     def _update(self, *resources):
         for context, items in self.__group_by_context(resources).items():
@@ -100,8 +101,9 @@ class WriterPlugin(SPARQLWriterPlugin):
                 self.__execute(remove_query, insert_query)
             else:
                 insert_queries = self.__prepare_add_many_queries(items, context)
-		for q in insert_queries:
-	                self.__execute(remove_query, q)
+                self.__execute(remove_query)
+                for q in insert_queries:
+                    self.__execute( q)
 
     def _remove(self, *resources, **kwargs):
         for context, items in self.__group_by_context(resources).items():
